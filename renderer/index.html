@@ -13,43 +13,62 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB6liXy_rVNkrKY_EI7eTtX0Be40tmVdV8&libraries=places&callback=initAutocomplete"
+        defer></script>
 </head>
 
 <body>
     <nav class="shadow-md p-4">
         <div class="max-w-7x1 mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between">
+            <div class="flex justify-between items-center">
                 <div class="flex items-center">
                     <a href="#" class="flex items-center font-bold">
-                        <img src="images/champagne.png" width="60px">
+                        <img class="w-28" src="images/logo.png">
                         Date Night
                     </a>
                 </div>
-                <div class="flex items-center h-16">
+                <div class="flex items-center mr-28 h-16">
                     <div class="hidden md:block">
-                        <div class="ml-10 flex items-baseline space-x-4">
-                            <a href="#" class="hover:underline">About</a>
-                            <a href="#" class="hover:underline">Services</a>
-                            <a href="#" class="hover:underline">Contact</a>
+                        <div class=" flex items-baseline space-x-4">
+                            <a href="#" class="hover:underline">Featured</a>
+                            <a href="#" class="hover:underline">Profile</a>
+                            <a href="#" class="hover:underline">Favorites</a>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center">
                     <div class="hidden md:block">
-                        <div class="ml-10 flex items-baseline space-x-4">
-                            <a href="#" class="border border-red-400 rounded py-1 px-5 bg-red-400 transition hover:border-black hover:bg-white">Join</a>
+                        <div class="flex items-baseline">
+                            <a href="#"
+                                class="border border-red-400 rounded py-1 px-5 bg-red-400 transition hover:border-black hover:bg-white">Join</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
-    <div class="bg-auto blur-sm">
-        <img src="images/main.jpg">
+    <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+        <div class="bg-white p-2 rounded-lg shadow-lg flex items-center">
+            <input id="autocomplete" type="text" placeholder="Search Date Night"
+                class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500">
+            <button class="rounded-md ml-2 h-6 w-6" title="Search">
+                <img src="images/search.png" alt="Search Icon">
+            </button>
+        </div>
     </div>
-    <footer>
-
-    </footer>
+    <script>
+        let autocomplete;
+        function initAutocomplete() {
+            autocomplete = new google.maps.places.Autocomplete(
+                document.getElementById('autocomplete'),
+                {
+                    types: ['geocode'],
+                    componentRestrictions: { 'country': ['us'] },
+                    fields: ['place_id', 'geometry', 'name']
+                });
+        }
+    </script>
 </body>
 
 </html>
