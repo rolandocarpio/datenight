@@ -13,61 +13,159 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB6liXy_rVNkrKY_EI7eTtX0Be40tmVdV8&libraries=places&callback=initAutocomplete"
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB6liXy_rVNkrKY_EI7eTtX0Be40tmVdV8&libraries=places"
         defer></script>
+    <script>
+        let map;
+        let directionsService;
+        let directionsRenderer;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 40.7128, lng: -74.0060 }, // Default center (New York City)
+                zoom: 12,
+                mapId: "DEMO_MAP_ID"
+            });
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
+
+            // Add autocomplete for city search
+            const input = document.getElementById("city-input");
+            const autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    console.error("No location selected");
+                    return;
+                }
+                map.setCenter(place.geometry.location);
+                map.setZoom(12);
+
+                // Call function to find top-rated restaurants
+                findTopRatedRestaurants(place.geometry.location);
+            });
+        }
+
+        function findTopRatedRestaurants(location) {
+            // Perform a Places Nearby Search request to find top-rated restaurants
+            // Adjust the radius and other parameters as needed
+            const request = {
+                location: location,
+                radius: 5000, // Search within 5km radius
+                type: 'restaurant',
+                rankBy: google.maps.places.RankBy.PROMINENCE
+            };
+            const service = new google.maps.places.PlacesService(map);
+            service.nearbySearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    // Assuming the first 3 results are the top-rated restaurants
+                    const restaurants = results.slice(0, 3);
+                    displayRestaurants(restaurants);
+                    calculateAndDisplayRoute(restaurants);
+                } else {
+                    console.error("Error fetching restaurants:", status);
+                }
+            });
+        }
+
+        function displayRestaurants(restaurants) {
+            // Display each restaurant as a marker on the map
+            // Log the restaurant data to verify its structure
+            console.log(restaurants);
+
+            // Only create a marker for the first restaurant as a test
+            const firstRestaurant = restaurants[0];
+            const marker = new google.maps.Marker({
+                position: firstRestaurant.geometry.location,
+                map: map,
+                title: firstRestaurant.name
+            });
+
+            // Check if the marker is created successfully
+            console.log(marker);
+            /*
+            restaurants.forEach((place, index) => {
+                const marker = new google.maps.marker.AdvancedMarkerElement({
+                    position: place.geometry.location,
+                    map,
+                    label: (index + 1).toString() // Marker label
+                });
+            });
+            */
+        }
+
+        function calculateAndDisplayRoute(restaurants) {
+            const waypoints = restaurants.map(restaurant => ({
+                location: restaurant.geometry.location,
+                stopover: true
+            }));
+            const request = {
+                origin: waypoints.shift().location,
+                destination: waypoints.pop().location,
+                waypoints: waypoints,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+            directionsService.route(request, (result, status) => {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                } else {
+                    console.error("Error calculating route:", status);
+                }
+            });
+        }
+    </script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
 </head>
 
-<body>
-    <nav class="shadow-md p-4">
-        <div class="max-w-7x1 mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                    <a href="#" class="flex items-center font-bold">
-                        <img class="w-28" src="images/logo.png">
-                        Date Night
-                    </a>
-                </div>
-                <div class="flex items-center mr-28 h-16">
-                    <div class="hidden md:block">
-                        <div class=" flex items-baseline space-x-4">
-                            <a href="#" class="hover:underline">Featured</a>
-                            <a href="#" class="hover:underline">Profile</a>
-                            <a href="#" class="hover:underline">Favorites</a>
+<body onload="initMap()">
+    <div class="flex flex-col h-screen">
+        <nav class="shadow-md p-4">
+            <div class="max-w-7x1 mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <a href="#" class="flex items-center font-bold">
+                            <img class="w-28" src="images/logo.png">
+                            Date Night
+                        </a>
+                    </div>
+                    <div class="flex items-center mr-28 h-16">
+                        <div class="hidden md:block">
+                            <div class=" flex items-baseline space-x-4">
+                                <a href="#" class="hover:underline">Featured</a>
+                                <a href="#" class="hover:underline">Profile</a>
+                                <a href="#" class="hover:underline">Favorites</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="flex items-center">
-                    <div class="hidden md:block">
-                        <div class="flex items-baseline">
-                            <a href="#"
-                                class="border border-red-400 rounded py-1 px-5 bg-red-400 transition hover:border-black hover:bg-white">Join</a>
+                    <div class="flex items-center">
+                        <div class="hidden md:block">
+                            <div class="flex items-baseline">
+                                <a href="#"
+                                    class="border border-red-400 rounded py-1 px-5 bg-red-400 transition hover:border-black hover:bg-white">Join</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </nav>
+        <div class="flex-1 flex items-center justify-center">
+            <div class="bg-white p-2 rounded-lg shadow-lg flex items-center">
+                <input id="city-input" type="text" placeholder="Search Date Night"
+                    class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500">
+                <button class="rounded-md ml-2 h-6 w-6" title="Search">
+                    <img src="images/search.png" alt="Search Icon">
+                </button>
+            </div>
         </div>
-    </nav>
-    <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-        <div class="bg-white p-2 rounded-lg shadow-lg flex items-center">
-            <input id="autocomplete" type="text" placeholder="Search Date Night"
-                class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500">
-            <button class="rounded-md ml-2 h-6 w-6" title="Search">
-                <img src="images/search.png" alt="Search Icon">
-            </button>
-        </div>
+        <div id="map"></div>
     </div>
     <script>
-        let autocomplete;
-        function initAutocomplete() {
-            autocomplete = new google.maps.places.Autocomplete(
-                document.getElementById('autocomplete'),
-                {
-                    types: ['geocode'],
-                    componentRestrictions: { 'country': ['us'] },
-                    fields: ['place_id', 'geometry', 'name']
-                });
-        }
+
     </script>
 </body>
 
